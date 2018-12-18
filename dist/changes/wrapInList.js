@@ -6,6 +6,8 @@ Object.defineProperty(exports, "__esModule", {
 
 var _slate = require('slate');
 
+require('slate-react');
+
 var _immutable = require('immutable');
 
 var _utils = require('../utils');
@@ -14,13 +16,13 @@ var _utils = require('../utils');
  * Wrap the blocks in the current selection in a new list. Selected
  * lists are merged together.
  */
-function wrapInList(opts, change, type, data) {
-    var selectedBlocks = getHighestSelectedBlocks(change.value);
+function wrapInList(opts, editor, type, data) {
+    var selectedBlocks = getHighestSelectedBlocks(editor.value);
     type = type || opts.types[0];
 
-    change.withoutNormalizing(function () {
+    editor.withoutNormalizing(function () {
         // Wrap in container
-        change.wrapBlock({
+        editor.wrapBlock({
             type: type,
             data: _slate.Data.create(data)
         });
@@ -31,21 +33,20 @@ function wrapInList(opts, change, type, data) {
                 // Merge its items with the created list
                 node.nodes.forEach(function (_ref) {
                     var key = _ref.key;
-                    return change.unwrapNodeByKey(key);
+                    return editor.unwrapNodeByKey(key);
                 });
             } else {
-                change.wrapBlockByKey(node.key, opts.typeItem);
+                editor.wrapBlockByKey(node.key, opts.typeItem);
             }
         });
     });
 
-    return change.normalize();
+    return editor.normalize();
 }
 
 /**
  * Returns the highest list of blocks that cover the current selection
  */
-
 function getHighestSelectedBlocks(value) {
     var range = value.selection;
     var document = value.document;

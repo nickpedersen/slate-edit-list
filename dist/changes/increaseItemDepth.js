@@ -6,6 +6,8 @@ Object.defineProperty(exports, "__esModule", {
 
 var _slate = require('slate');
 
+require('slate-react');
+
 var _utils = require('../utils');
 
 /**
@@ -13,32 +15,33 @@ var _utils = require('../utils');
  * of previous item.
  * For first items in a list, does nothing.
  */
-function increaseItemDepth(opts, change) {
-    var previousItem = (0, _utils.getPreviousItem)(opts, change.value);
-    var currentItem = (0, _utils.getCurrentItem)(opts, change.value);
+function increaseItemDepth(opts, editor) {
+    var previousItem = (0, _utils.getPreviousItem)(opts, editor.value);
+    var currentItem = (0, _utils.getCurrentItem)(opts, editor.value);
 
     if (!previousItem) {
-        return change;
+        return editor;
     }
 
     if (!currentItem) {
-        return change;
+        return editor;
     }
 
     // Move the item in the sublist of previous item
-    return moveAsSubItem(opts, change, currentItem, previousItem.key);
+    return moveAsSubItem(opts, editor, currentItem, previousItem.key);
 }
 
 /**
  * Move the given item to the sublist at the end of destination item,
  * creating a sublist if needed.
  */
-function moveAsSubItem(opts, change,
+
+function moveAsSubItem(opts, editor,
 // The list item to add
 item,
 // The key of the destination node
 destKey) {
-    var destination = change.value.document.getDescendant(destKey);
+    var destination = editor.value.document.getDescendant(destKey);
     var lastIndex = destination.nodes.size;
     var lastChild = destination.nodes.last();
 
@@ -46,10 +49,10 @@ destKey) {
     var existingList = (0, _utils.isList)(opts, lastChild) ? lastChild : null;
 
     if (existingList) {
-        return change.moveNodeByKey(item.key, existingList.key, existingList.nodes.size // as last item
+        return editor.moveNodeByKey(item.key, existingList.key, existingList.nodes.size // as last item
         );
     }
-    var currentList = (0, _utils.getListForItem)(opts, change.value, destination);
+    var currentList = (0, _utils.getListForItem)(opts, editor.value, destination);
     if (!currentList) {
         throw new Error('Destination is not in a list');
     }
@@ -60,9 +63,9 @@ destKey) {
         data: currentList.data
     });
 
-    return change.withoutNormalizing(function () {
-        change.insertNodeByKey(destKey, lastIndex, newSublist);
-        change.moveNodeByKey(item.key, newSublist.key, 0);
+    return editor.withoutNormalizing(function () {
+        editor.insertNodeByKey(destKey, lastIndex, newSublist);
+        editor.moveNodeByKey(item.key, newSublist.key, 0);
     });
 }
 

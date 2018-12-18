@@ -4,8 +4,6 @@ Object.defineProperty(exports, "__esModule", {
     value: true
 });
 
-require('slate');
-
 var _changes = require('../changes');
 
 var _utils = require('../utils');
@@ -17,38 +15,38 @@ var _utils = require('../utils');
  * Enter in an empty list item should remove it
  * Shift+Enter in a list item should make a new line
  */
-function onEnter(event, change, editor, opts) {
+function onEnter(event, editor, next, opts) {
     // Pressing Shift+Enter
     // should split block normally
     if (event.shiftKey) {
-        return undefined;
+        return next();
     }
 
-    var value = change.value;
+    var value = editor.value;
 
     var currentItem = (0, _utils.getCurrentItem)(opts, value);
 
     // Not in a list
     if (!currentItem) {
-        return undefined;
+        return next();
     }
 
     event.preventDefault();
 
     // If expanded, delete first.
     if (value.selection.isExpanded) {
-        change.delete();
+        editor.delete();
     }
 
-    if (!value.schema.isVoid(currentItem) && currentItem.text === '') {
+    if (!editor.isVoid(currentItem) && currentItem.text === '') {
         // Block is empty, we exit the list
         if ((0, _utils.getItemDepth)(opts, value) > 1) {
-            return (0, _changes.decreaseItemDepth)(opts, change);
+            return (0, _changes.decreaseItemDepth)(opts, editor);
         }
         // Exit list
-        return (0, _changes.unwrapList)(opts, change);
+        return (0, _changes.unwrapList)(opts, editor);
     }
     // Split list item
-    return (0, _changes.splitListItem)(opts, change);
+    return (0, _changes.splitListItem)(opts, editor);
 }
 exports.default = onEnter;

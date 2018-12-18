@@ -42,8 +42,8 @@ function EditList() {
 /**
  * User is pressing a key in the editor
  */
-function onKeyDown(opts, event, change, editor) {
-    var args = [event, change, editor, opts];
+function onKeyDown(opts, event, editor, next) {
+    var args = [event, editor, next, opts];
 
     switch (event.key) {
         case KEY_ENTER:
@@ -53,7 +53,7 @@ function onKeyDown(opts, event, change, editor) {
         case KEY_BACKSPACE:
             return _handlers.onBackspace.apply(undefined, args);
         default:
-            return undefined;
+            return next();
     }
 }
 

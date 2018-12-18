@@ -10,6 +10,8 @@ var _defineProperty3 = _interopRequireDefault(_defineProperty2);
 
 require('slate');
 
+require('slate-react');
+
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
 /**
@@ -24,13 +26,13 @@ function schema(opts) {
             nodes: [{ match: { object: 'block' } }],
 
             normalize: normalize({
-                parent_type_invalid: function parent_type_invalid(change, context) {
-                    return change.unwrapBlockByKey(context.node.key, {
+                parent_type_invalid: function parent_type_invalid(editor, context) {
+                    return editor.unwrapBlockByKey(context.node.key, {
                         normalize: false
                     });
                 },
-                child_object_invalid: function child_object_invalid(change, context) {
-                    return wrapChildrenInDefaultBlock(opts, change, context.node);
+                child_object_invalid: function child_object_invalid(editor, context) {
+                    return wrapChildrenInDefaultBlock(opts, editor, context.node);
                 }
             })
         })
@@ -41,8 +43,8 @@ function schema(opts) {
         constructedSchema.blocks[type] = {
             nodes: [{ match: { type: opts.typeItem } }],
             normalize: normalize({
-                child_type_invalid: function child_type_invalid(change, context) {
-                    return change.wrapBlockByKey(context.child.key, opts.typeItem, {
+                child_type_invalid: function child_type_invalid(editor, context) {
+                    return editor.wrapBlockByKey(context.child.key, opts.typeItem, {
                         normalize: false
                     });
                 }
@@ -56,35 +58,34 @@ function schema(opts) {
 /*
  * Allows to define a normalize function through a keyed collection of functions
  */
-
 function normalize(reasons) {
-    return function (change, error) {
+    return function (editor, error) {
         var reasonFn = reasons[error.code];
         if (reasonFn) {
-            reasonFn(change, error);
+            reasonFn(editor, error);
         }
     };
 }
 
 /**
  * Wraps all child of a node in the default block type.
- * Returns a change, for chaining purposes
+ * Returns a editor, for chaining purposes
  */
-function wrapChildrenInDefaultBlock(opts, change, node) {
-    change.wrapBlockByKey(node.nodes.first().key, opts.typeDefault, {
+function wrapChildrenInDefaultBlock(opts, editor, node) {
+    editor.wrapBlockByKey(node.nodes.first().key, opts.typeDefault, {
         normalize: false
     });
 
-    var wrapper = change.value.document.getDescendant(node.key).nodes.first();
+    var wrapper = editor.value.document.getDescendant(node.key).nodes.first();
 
     // Add in the remaining items
     node.nodes.rest().forEach(function (child, index) {
-        return change.moveNodeByKey(child.key, wrapper.key, index + 1, {
+        return editor.moveNodeByKey(child.key, wrapper.key, index + 1, {
             normalize: false
         });
     });
 
-    return change;
+    return editor;
 }
 
 exports.default = schema;

@@ -6,6 +6,8 @@ Object.defineProperty(exports, "__esModule", {
 
 var _slate = require('slate');
 
+require('slate-react');
+
 var _utils = require('../utils');
 
 /**
@@ -14,20 +16,20 @@ var _utils = require('../utils');
  *
  * No-op for root items.
  */
-function decreaseItemDepth(opts, change) {
-    var value = change.value;
+function decreaseItemDepth(opts, editor) {
+    var value = editor.value;
     var document = value.document;
 
     // Cannot decrease item depth of root items
 
     var depth = (0, _utils.getItemDepth)(opts, value);
     if (depth == 1) {
-        return change;
+        return editor;
     }
 
     var currentItem = (0, _utils.getCurrentItem)(opts, value);
     if (!currentItem) {
-        return change;
+        return editor;
     }
 
     var currentList = document.getParent(currentItem.key);
@@ -50,26 +52,25 @@ function decreaseItemDepth(opts, change) {
             data: currentList.data
         });
         // Add the sublist
-        change.withoutNormalizing(function () {
-            change.insertNodeByKey(currentItem.key, currentItem.nodes.size, sublist);
+        editor.withoutNormalizing(function () {
+            editor.insertNodeByKey(currentItem.key, currentItem.nodes.size, sublist);
 
-            change.moveNodeByKey(currentItem.key, parentList.key, parentList.nodes.indexOf(parentItem) + 1);
+            editor.moveNodeByKey(currentItem.key, parentList.key, parentList.nodes.indexOf(parentItem) + 1);
 
             // Move the followingItems to the sublist
             followingItems.forEach(function (item, index) {
-                return change.moveNodeByKey(item.key, sublist.key, sublist.nodes.size + index);
+                return editor.moveNodeByKey(item.key, sublist.key, sublist.nodes.size + index);
             });
         });
     } else {
-        change.moveNodeByKey(currentItem.key, parentList.key, parentList.nodes.indexOf(parentItem) + 1);
+        editor.moveNodeByKey(currentItem.key, parentList.key, parentList.nodes.indexOf(parentItem) + 1);
     }
 
     // Remove the currentList completely if needed
     if (willEmptyCurrentList) {
-        change.removeNodeByKey(currentList.key);
+        editor.removeNodeByKey(currentList.key);
     }
 
-    return change;
+    return editor;
 }
-
 exports.default = decreaseItemDepth;

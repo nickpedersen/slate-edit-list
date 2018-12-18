@@ -4,8 +4,6 @@ Object.defineProperty(exports, "__esModule", {
     value: true
 });
 
-require('slate');
-
 var _changes = require('../changes');
 
 var _utils = require('../utils');
@@ -15,23 +13,23 @@ var _utils = require('../utils');
  * Tab       -> Increase item depth if inside a list item
  * Shift+Tab -> Decrease item depth if inside a list item
  */
-function onTab(event, change, editor, opts) {
-    var value = change.value;
+function onTab(event, editor, next, opts) {
+    var value = editor.value;
     var isCollapsed = value.selection.isCollapsed;
 
 
     if (!isCollapsed || !(0, _utils.getCurrentItem)(opts, value)) {
-        return undefined;
+        return next();
     }
 
     event.preventDefault();
 
     // Shift+tab reduce depth
     if (event.shiftKey) {
-        return (0, _changes.decreaseItemDepth)(opts, change);
+        return (0, _changes.decreaseItemDepth)(opts, editor);
     }
 
     // Tab increases depth
-    return (0, _changes.increaseItemDepth)(opts, change);
+    return (0, _changes.increaseItemDepth)(opts, editor);
 }
 exports.default = onTab;

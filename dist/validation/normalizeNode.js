@@ -10,6 +10,8 @@ var _slicedToArray3 = _interopRequireDefault(_slicedToArray2);
 
 require('slate');
 
+var _slateReact = require('slate-react');
+
 var _utils = require('../utils');
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
@@ -18,31 +20,32 @@ function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { de
  * Create a schema definition with rules to normalize lists
  */
 function normalizeNode(opts) {
-    return function (node) {
-        return joinAdjacentLists(opts, node);
+    return function (node, editor, next) {
+        return joinAdjacentLists(opts, node, next);
     };
 }
 
 /**
  * A rule that joins adjacent lists of the same type
  */
-function joinAdjacentLists(opts, node) {
+
+function joinAdjacentLists(opts, node, next) {
     if (node.object !== 'document' && node.object !== 'block') {
-        return undefined;
+        return next();
     }
 
     var invalids = node.nodes.map(function (child, i) {
         if (!(0, _utils.isList)(opts, child)) return null;
-        var next = node.nodes.get(i + 1);
-        if (!next || !(0, _utils.isList)(opts, next) || !opts.canMerge(child, next)) {
+        var nextNode = node.nodes.get(i + 1);
+        if (!nextNode || !(0, _utils.isList)(opts, nextNode) || !opts.canMerge(child, nextNode)) {
             return null;
         }
 
-        return [child, next];
+        return [child, nextNode];
     }).filter(Boolean);
 
     if (invalids.isEmpty()) {
-        return undefined;
+        return next();
     }
 
     /**
